@@ -14,16 +14,24 @@
     </style>
 </head>
 
-<body>
-    
+<body style="background-color: #e6f2ff ;">
+    <container>
+    <div class="container">
     <?php
-            $msg = '';
+        session_start(); // START
+        
+        if (isset($_GET['action']) and $_GET['action'] == 'logout') {    // LOGOUT logic
+            session_destroy();
+            session_start();
+        }
+        
+        $msg = '';
         if (isset($_POST['login']) && !empty($_POST['username']) && !empty($_POST['password'])) {       // LOGIN logic
             if ($_POST['username'] == 'Patestuojam' && $_POST['password'] == '1234') {
                 $_SESSION['logged_in'] = true;
                 $_SESSION['username'] = $_POST['username'];
                 print('<a href= "./" action= "">');
-                
+                header("refresh: 3");
             
             } else {
                 $msg = 'Wrong username or password';
@@ -38,29 +46,117 @@
                                 ? print("style = 'display: none'")
                                 : print("style = 'display: block'") ?>>
                                 <span class="" style="font-size: 35px; color: #0073e6; margin-left:10px; padding: 20px;">
-                                FILE SYSTEM BROWSER</span>
+                                <img src="image2.png" alt="Fine">FILE SYSTEM BROWSER</span>
                                 Sign in
         </h1>
-        <h4><?php echo $msg; ?></h4>
         <div>
             <form action="" method="POST" <?php isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == true
                                                 ? print("style = \"display: none\"")
                                                 : print("style = \"display: block\"") ?>>
-                
-                <input class="mb-4 " type="text" name="username" placeholder="username = Patestuojam" required autofocus></br>
-                <input class="mb-4 " type="password" name="password" placeholder="password = 1234" required></br>
-                <button class="btn btn-primary" style=" color: white;" type="submit" name="login" formaction="./">Login</button>
+                <h4><?php echo $msg; ?></h4>
+                <input class="mb-4 form-control form-control-md" type="text" name="username" placeholder="username = Patestuojam" required autofocus></br>
+                <input class="mb-4 form-control form-control-md" type="password" name="password" placeholder="password = 1234" required></br>
+                <button class="btn btn-lg btn-block btn-primary" style=" color: white; width: 250px;" type="submit" name="login" formaction="./">Login</button>
             </form>
         </div>
     </div>
-    
+
     <?php
     if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == true) 
     {
         $path = isset($_GET["path"]) ? './' . $_GET["path"] : './';
         $docs = scandir($path);
 
-        $backButton = "";       // Logic
+        // CREATE NEW FOLDER Conditional Statement
+        //------------------------------------------
+        $success = "";
+        $errors = "";
+        if (isset($_POST['createfolder'])) {
+            $folder_name = $_POST['createfolder'];
+            if (isset($_GET['path'])) {
+                $path_n = $_GET['path'];
+                $path = './' . $path_n;
+            }
+            if (!file_exists($path . $folder_name)) {
+                @mkdir($path . $folder_name, 0777, true);
+                header("refresh: 1");
+            } else if (isset($_POST['createfolder']) && file_exists("./" . $_POST['createfolder'])) {
+                $errors = 'Folder ' . $_POST['createfolder'] . ' already exists';
+            }
+        }
+
+
+
+        
+        if (isset($_FILES['image'])) { // Upload file logic
+            $errors = "";
+            $file_name = $_FILES['image']['name'];
+            $file_size = $_FILES['image']['size'];
+            $file_tmp = $_FILES['image']['tmp_name'];
+            $file_type = $_FILES['image']['type'];
+            $file_ext_n = (explode('.', $_FILES['image']['name']));
+            $file_ext = strtolower(end($file_ext_n));
+            $extensions = array("jpeg", "jpg", "png", "");
+
+            if ($_FILES['image']['size'] == 0 ){
+                $errors = "No file was selected for upload!";
+            }           
+            if (in_array($file_ext, $extensions) === false) {
+                $errors = "Extension not allowed, please choose a JPEG or PNG file.";
+            }
+            if ($file_size > 2097152) {
+                $errors = 'File size must be less than 2 MB';
+            }
+            if (empty($errors) == true) {
+                move_uploaded_file($file_tmp, "./" . $path . $file_name);
+                $success = "Success uploaded file!";
+                header("refresh: 1");                
+            }
+        }
+        
+        // DOWNLOAD FILE Conditional Statement
+        //------------------------------------------
+        if (isset($_POST['download'])) {
+            $file = './' . $_GET['path'] . "/" . $_POST['download'];
+            $fileToDownloadEscaped = str_replace("&nbsp;", " ", htmlentities($file, 0, 'utf-8'));
+
+            ob_clean();
+            ob_start();
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/pdf');
+            header('Content-Disposition: attachment; filename=' . basename($fileToDownloadEscaped));
+            header('Content-Transfer-Encoding: binary');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+            header('Pragma: public');
+            header('Content-Length: ' . filesize($fileToDownloadEscaped));
+            ob_end_flush();
+            readfile($fileToDownloadEscaped);
+            exit;
+        }
+
+
+        $deleteSuccess = "";            //Delete logic
+        $deleteError = '';
+        if (isset($_POST['delete']) && $_POST['delete'] !== 'index.php' &&
+            $_POST['delete'] !== 'README.md' && $_POST['delete'] !== 'image2.jpg') {
+            $file = './' . $path . $_POST['delete'];
+            if (is_file($file)) {                
+                if (file_exists($file)) {
+                    unlink($file);
+                    header("refresh: 1");
+                    $deleteSuccess = 'File Deleted Successfuly!';
+                    }
+                }
+            }
+        if (isset($_POST['delete']) && ($_POST['delete'] === 'index.php' ||
+            $_POST['delete'] === 'README.md' || $_POST['delete'] === 'image2.png')) {
+            $deleteError = 'This file can not be deleted!';
+        }
+
+        
+
+        $backButton = "";       //Go Back Logic
         $counter = ""; 
         if (isset($_GET["path"])) {
             $backButton = explode('/', rtrim($_SERVER['QUERY_STRING'], '/'));
@@ -70,84 +166,28 @@
                             : $backButton = '?' . implode('/', $backButton) . '/';
            
         }
-
-        print('<div class="mb-3 mt-4" style="display: flex-end; aligne-items: center;">
-        <button class="mb-4 mx-2 btn btn-warning mt-3 ">
-        <a href="index.php?action=logout" style="text-decoration: none; color: white;">
-        <i class="fa-solid fa-right-from-bracket"></i>Logout</a></button></div>'); // Logout button
-
-        if(!$counter == 0){             // Back button 
-            print('<button class="mb-4 mx-2 btn btn-primary " style="float: left;">
-            <a style="text-decoration: none; color: white;" href= "' . $backButton . '">
-            <i class="fa-solid fa-circle-arrow-left"></i> 
-            Back</a>
-            </button>');
-        }else {
-            print('<button class="mb-4 mx-2 btn btn-light " style="float: left;">
-            <a style="text-decoration: none; color: grey;">
-            <i class="fa-solid fa-circle-arrow-left"></i> 
-            Back</a>
-            </button>');
-        }
-
-        print('
-        <table class="table table-striped table-active" style="width:80%; margin:auto; border-radius: 10%; border: 1px solid black;">
-        <th style="width: 50%; text-align: center; border: 1px solid black;">Name</th>
-        <th style="width: 10%; text-align: center; border: 1px solid black;">Type</th>
-        <th style="width: 10%; text-align: center; border: 1px solid black;">Delete</th> 
-        <th style="width: 10%; text-align: center; border: 1px solid black;">Download</th>
-    ');
-    
-
-
-    foreach ($docs as $value) {
-        if ($value != ".." and $value != "." and $value != ".git") {
-            print('<tr>');
-            print('<td style="border: 1px solid black;">' . (is_dir($path . $value)
-                ? '<i class="fa-solid fa-folder-open" style="font-size: 20px; color:  #0073e6; "></i> <a style=" text-decoration: none; color:  #0073e6 " href="' . (isset($_GET['path'])
-                    ? $_SERVER["REQUEST_URI"] . $value . '/'
-                    : $_SERVER['REQUEST_URI'] . '?path=' . $value . '/') . '">' . $value . '</a>'
-                : $value)                    
-                . '</td>');
-               
-            print('<td style="border: 1px solid black; text-align: center; ">' . (is_dir($path . $value) ? "Folder" : "File") . '</td>');
-
-
-            if (is_dir($path . $value)) { 
-                print('<td style="border: 1px solid black;"></td>');
-                print('<td style="border: 1px solid black;"></td>');
-            } else if (is_file($path . $value)) {
-                
-
-                print('<td style="border: 1px solid black;">' .
-                    '<form style= "display: flex; justify-content: center" action="" method="post">
-                        <button class="delete btn btn-xs btn-danger" type ="submit" name="delete" value ='  . $value . ' style="color: white;">
-                        <i class="fa-regular fa-trash-can"></i> 
-                        Delete</button>
-                        </form>
-                       </td>'); 
+       
+        // Header, Logout, Create folder, Uplode folder
+        
+        print("<div style='margin-top: -20px; display: flex; align-items: center;
+               justify-content: space-between ; display: space-  margin-left:10px;'>");               
+                print('<div><span class="" style="font-size: 35px; color: #0073e6; margin-left:10px; padding: 20px;">  
+                       <img src="image2.png" alt="Fine">FILE SYSTEM BROWSER</span></div>');  //  FSB   
+                print('<div class="mb-3 mt-4" style="display: flex-end; aligne-items: center;">
+                       <button class="mb-4 mx-2 btn btn-warning mt-3 ">
+                       <a href="index.php?action=logout" style="text-decoration: none; color: white;">
+                       <i class="fa-solid fa-right-from-bracket"></i>Logout</a></button></div>'); // Logout button
+        print("</div>");
 
 
 
-                print('<td style="border: 1px solid black;">');
-                print('<form style= "display: flex; justify-content: center" action="" method="POST">');
-                print('<button type="submit" name="download" value="' . $value . '" class="btn" style=" color: white; background: #2884bd;">
-                       <i class="fa-solid fa-download"></i> 
-                       Download</button>
-                       </form>'); 
-                print('</td>');
-            print("</tr>");  
-            }
-        }
-    }
-    print('</table>'); 
-    print("<div style='display: flex; justify-content: space-between;'>"); 
+        print("<div style='display: flex; justify-content: space-between;'>"); 
                 print('<form class="mb-4" action="" method="POST" style=" text-align: end;">
                 <input name="createfolder" type="text" class="p-2 mb-4 mt-3  rounded" placeholder="Folder name" style="height: 48px; background-color: white; border: 2px solid gray;">
                 <button type="submit" class="btn btn-success mb-4 mt-3" style="color: white;">
                 <i class="fa-solid fa-folder-plus"></i> 
                 Create Folder</button> 
-                </form>');  
+                </form>');  //Create folder
 
                 
                 print('<form class="mb-4" action="" method="POST" enctype="multipart/form-data" style="margin-left:10px; text-align: end;">
@@ -155,14 +195,103 @@
                 <button type = "submit" class="btn btn-success mb-4 mt-3" style="color: white;"/>
                 <i class="fa-solid fa-upload"></i> 
                 Upload file</button>
-                </form>');  
+                </form>');  //Uplode file
         print('</div>');
 
+        
+        print("<div style=' display: flex; justify-content: space-between;  margin-left:10px;'>"); // Errors Display Logic and View
+            print('<h6 class="mx-2 mt-4" style="color: #0073e6;" >Directory: ' . str_replace('?path=/', "", $_SERVER["REQUEST_URI"]) . '</h6>');
+            if(!$deleteSuccess == "" || !$errors == "" || !$success == "" ){
+                print('<h6><div class="alert alert-warning alert-dismissible fade show" role="alert" >
+                      ' . $deleteSuccess . $errors . $success . '
+                       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                       </div></h6>');
+                }
+        print('</div>');
+        print("<br>");
 
+            if(!$counter == 0){             // Back button show logic
+                print('<button class="mb-4 mx-2 btn btn-primary " style="float: left;">
+                <a style="text-decoration: none; color: white;" href= "' . $backButton . '">
+                <i class="fa-solid fa-circle-arrow-left"></i> 
+                Back</a>
+                </button>');
+            }else {
+                print('<button class="mb-4 mx-2 btn btn-light " style="float: left;">
+                <a style="text-decoration: none; color: grey;">
+                <i class="fa-solid fa-circle-arrow-left"></i> 
+                Back</a>
+                </button>');
+            }
+            print("<br>");
+        print("</div>");
+        print("</div>");
+        print("<br>");
+        
+
+        //Table Start      
+        print('
+            <table class="table table-striped table-active" style="width:80%; margin:auto; border-radius: 10%; border: 1px solid black;">
+            <th style="width: 50%; text-align: center; border: 1px solid black;">Name</th>
+            <th style="width: 10%; text-align: center; border: 1px solid black;">Type</th>
+            <th style="width: 10%; text-align: center; border: 1px solid black;">Delete</th> 
+            <th style="width: 10%; text-align: center; border: 1px solid black;">Download</th>
+        '); // All Table Headers
+
+
+        foreach ($docs as $value) { //Printing Files and Folders list
+            if ($value != ".." and $value != "."  and $value != ".git") {
+                print('<tr>');
+                print('<td style="border: 1px solid black;">' . (is_dir($path . $value)
+                    ? '<i class="fa-solid fa-folder-open" style="font-size: 20px; color:  #0073e6; "></i> <a style=" text-decoration: none; color:  #0073e6 " href="' . (isset($_GET['path'])
+                        ? $_SERVER["REQUEST_URI"] . $value . '/'
+                        : $_SERVER['REQUEST_URI'] . '?path=' . $value . '/') . '">' . $value . '</a>'
+                    : $value)                    
+                    . '</td>');
+                    // Show File or Folder
+                print('<td style="border: 1px solid black; text-align: center; ">' . (is_dir($path . $value) ? "Folder" : "File") . '</td>');
+
+
+                if (is_dir($path . $value)) {   // Delete and Download buttons show logic start
+                    print('<td style="border: 1px solid black;"></td>');
+                    print('<td style="border: 1px solid black;"></td>');
+                } else if (is_file($path . $value)) {
+                    
+
+                    print('<td style="border: 1px solid black;">' .
+                        '<form style= "display: flex; justify-content: center" action="" method="post">
+                            <button class="delete btn btn-xs btn-danger" type ="submit" name="delete" value ='  . $value . ' style="color: white;">
+                            <i class="fa-regular fa-trash-can"></i> 
+                            Delete</button>
+                            </form>
+                           </td>');  // Delete button
+
+
+
+                    print('<td style="border: 1px solid black;">');
+                    print('<form style= "display: flex; justify-content: center" action="" method="POST">');
+                    print('<button type="submit" name="download" value="' . $value . '" class="btn" style=" color: white; background: #2884bd;">
+                           <i class="fa-solid fa-download"></i> 
+                           Download</button>
+                           </form>');  // Downolad button
+                    print('</td>');
+                print("</tr>");  // Delete and Download buttons show logic end
+                }
+            }
+        }
+        print('</table>'); //Table end
     }
     ?>
+    <script>
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
+    </script>
+    <script src="https://kit.fontawesome.com/d9c5ee75e5.js" crossorigin="anonymous"></script>
+</div>
 
-
+    
+    </container>
 </body>
 
 </html>
