@@ -60,10 +60,35 @@
         $path = isset($_GET["path"]) ? './' . $_GET["path"] : './';
         $docs = scandir($path);
 
+        $backButton = "";       // Logic
+        $counter = ""; 
+        if (isset($_GET["path"])) {
+            $backButton = explode('/', rtrim($_SERVER['QUERY_STRING'], '/'));
+            array_pop($backButton);
+            $counter = count($backButton) == 0
+                            ? $backButton = './'
+                            : $backButton = '?' . implode('/', $backButton) . '/';
+           
+        }
+
         print('<div class="mb-3 mt-4" style="display: flex-end; aligne-items: center;">
         <button class="mb-4 mx-2 btn btn-warning mt-3 ">
         <a href="index.php?action=logout" style="text-decoration: none; color: white;">
         <i class="fa-solid fa-right-from-bracket"></i>Logout</a></button></div>'); // Logout button
+
+        if(!$counter == 0){             // Back button 
+            print('<button class="mb-4 mx-2 btn btn-primary " style="float: left;">
+            <a style="text-decoration: none; color: white;" href= "' . $backButton . '">
+            <i class="fa-solid fa-circle-arrow-left"></i> 
+            Back</a>
+            </button>');
+        }else {
+            print('<button class="mb-4 mx-2 btn btn-light " style="float: left;">
+            <a style="text-decoration: none; color: grey;">
+            <i class="fa-solid fa-circle-arrow-left"></i> 
+            Back</a>
+            </button>');
+        }
 
         print('
         <table class="table table-striped table-active" style="width:80%; margin:auto; border-radius: 10%; border: 1px solid black;">
@@ -116,6 +141,22 @@
         }
     }
     print('</table>'); 
+    print("<div style='display: flex; justify-content: space-between;'>"); 
+                print('<form class="mb-4" action="" method="POST" style=" text-align: end;">
+                <input name="createfolder" type="text" class="p-2 mb-4 mt-3  rounded" placeholder="Folder name" style="height: 48px; background-color: white; border: 2px solid gray;">
+                <button type="submit" class="btn btn-success mb-4 mt-3" style="color: white;">
+                <i class="fa-solid fa-folder-plus"></i> 
+                Create Folder</button> 
+                </form>');  
+
+                
+                print('<form class="mb-4" action="" method="POST" enctype="multipart/form-data" style="margin-left:10px; text-align: end;">
+                <input type = "file" name = "image" value = "" class="btn w-40 p-2 mb-4 mt-3 rounded" style="border: 2px solid grey; background-color: white"/>
+                <button type = "submit" class="btn btn-success mb-4 mt-3" style="color: white;"/>
+                <i class="fa-solid fa-upload"></i> 
+                Upload file</button>
+                </form>');  
+        print('</div>');
 
 
     }
