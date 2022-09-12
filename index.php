@@ -34,7 +34,7 @@
                 header("refresh: 3");
             
             } else {
-                $msg = 'Wrong username or password';
+                $msg = 'Wrong username or password!';
             }
         }
     ?>
@@ -53,7 +53,7 @@
             <form action="" method="POST" <?php isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == true
                                                 ? print("style = \"display: none\"")
                                                 : print("style = \"display: block\"") ?>>
-                <h4><?php echo $msg; ?></h4>
+                <h4 style="color: red"><?php echo $msg; ?></h4>
                 <input class="mb-4 form-control form-control-md" type="text" name="username" placeholder="username = Patestuojam" required autofocus></br>
                 <input class="mb-4 form-control form-control-md" type="password" name="password" placeholder="password = 1234" required></br>
                 <button class="btn btn-lg btn-block btn-primary" style=" color: white; width: 250px;" type="submit" name="login" formaction="./">Login</button>
@@ -139,7 +139,7 @@
         $deleteSuccess = "";            //Delete logic
         $deleteError = '';
         if (isset($_POST['delete']) && $_POST['delete'] !== 'index.php' &&
-            $_POST['delete'] !== 'README.md' && $_POST['delete'] !== 'image2.jpg') {
+            $_POST['delete'] !== 'README.md' && $_POST['delete'] !== 'image2.png') {
             $file = './' . $path . $_POST['delete'];
             if (is_file($file)) {                
                 if (file_exists($file)) {
@@ -149,8 +149,7 @@
                     }
                 }
             }
-        if (isset($_POST['delete']) && ($_POST['delete'] === 'index.php' ||
-            $_POST['delete'] === 'README.md' || $_POST['delete'] === 'image2.png')) {
+        if (isset($_POST['delete']) && ($_POST['delete'] === 'index.php' || $_POST['delete'] === 'README.md' || $_POST['delete'] == 'image2.png')) {
             $deleteError = 'This file can not be deleted!';
         }
 
@@ -167,7 +166,7 @@
            
         }
        
-        // Header, Logout, Create folder, Uplode folder
+        // Header, Logout, Create folder, Upload folder
         
         print("<div style='margin-top: -20px; display: flex; align-items: center;
                justify-content: space-between ; display: space-  margin-left:10px;'>");               
@@ -195,20 +194,21 @@
                 <button type = "submit" class="btn btn-success mb-4 mt-3" style="color: white;"/>
                 <i class="fa-solid fa-upload"></i> 
                 Upload file</button>
-                </form>');  //Uplode file
+                </form>');  //Upload file
         print('</div>');
 
         
         print("<div style=' display: flex; justify-content: space-between;  margin-left:10px;'>"); // Errors Display Logic and View
             print('<h6 class="mx-2 mt-4" style="color: #0073e6;" >Directory: ' . str_replace('?path=/', "", $_SERVER["REQUEST_URI"]) . '</h6>');
-            if(!$deleteSuccess == "" || !$errors == "" || !$success == "" ){
+            if(!$deleteSuccess == "" || !$errors == "" || !$success == "" || !$deleteError == "" ){
                 print('<h6><div class="alert alert-warning alert-dismissible fade show" role="alert" >
-                      ' . $deleteSuccess . $errors . $success . '
+                      ' . $deleteSuccess . $errors . $success . $deleteError . '
                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                        </div></h6>');
                 }
         print('</div>');
-        print("<br>");
+        // print("<br>");
+       
 
             if(!$counter == 0){             // Back button show logic
                 print('<button class="mb-4 mx-2 btn btn-primary " style="float: left;">
@@ -227,6 +227,8 @@
         print("</div>");
         print("</div>");
         print("<br>");
+        print("<br>");
+
         
 
         //Table Start      
@@ -261,7 +263,8 @@
 
                     print('<td style="border: 1px solid black;">' .
                         '<form style= "display: flex; justify-content: center" action="" method="post">
-                            <button class="delete btn btn-xs btn-danger" type ="submit" name="delete" value ='  . $value . ' style="color: white;">
+                            <button class="delete btn btn-xs btn-danger" type ="submit" name="delete" 
+                            value ='  . $value . ' style="color: white;">
                             <i class="fa-regular fa-trash-can"></i> 
                             Delete</button>
                             </form>
