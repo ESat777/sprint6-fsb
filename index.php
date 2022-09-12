@@ -243,7 +243,8 @@
             if ($value != ".." and $value != "."  and $value != ".git") {
                 print('<tr>');
                 print('<td style="border: 1px solid black;">' . (is_dir($path . $value)
-                    ? '<i class="fa-solid fa-folder-open" style="font-size: 20px; color:  #0073e6; "></i> <a style=" text-decoration: none; color:  #0073e6 " href="' . (isset($_GET['path'])
+                    ? '<i class="fa-solid fa-folder-open" style="font-size: 20px; color:  #0073e6; "></i>
+                    <a style=" text-decoration: none; color:  #0073e6 " href="' . (isset($_GET['path'])
                         ? $_SERVER["REQUEST_URI"] . $value . '/'
                         : $_SERVER['REQUEST_URI'] . '?path=' . $value . '/') . '">' . $value . '</a>'
                     : $value)                    
