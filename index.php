@@ -242,7 +242,7 @@
 
 
         foreach ($docs as $value) { //Printing Files and Folders list
-            if ($value != ".." and $value != "."  and $value != ".git") {
+            if ($value != ".." and $value != "."  and $value != ".git" and $value != "Pictures") {
                 print('<tr>');
                 print('<td style="border: 1px solid black;">' . (is_dir($path . $value)
                     ? '<i class="fa-solid fa-folder-open" style="font-size: 20px; color:  #0073e6; "></i>
