@@ -59,7 +59,64 @@
     {
         $path = isset($_GET["path"]) ? './' . $_GET["path"] : './';
         $docs = scandir($path);
-        print("Puiku!!!!!!!!");
+
+        print('<div class="mb-3 mt-4" style="display: flex-end; aligne-items: center;">
+        <button class="mb-4 mx-2 btn btn-warning mt-3 ">
+        <a href="index.php?action=logout" style="text-decoration: none; color: white;">
+        <i class="fa-solid fa-right-from-bracket"></i>Logout</a></button></div>'); // Logout button
+
+        print('
+        <table class="table table-striped table-active" style="width:80%; margin:auto; border-radius: 10%; border: 1px solid black;">
+        <th style="width: 50%; text-align: center; border: 1px solid black;">Name</th>
+        <th style="width: 10%; text-align: center; border: 1px solid black;">Type</th>
+        <th style="width: 10%; text-align: center; border: 1px solid black;">Delete</th> 
+        <th style="width: 10%; text-align: center; border: 1px solid black;">Download</th>
+    ');
+    
+
+
+    foreach ($docs as $value) {
+        if ($value != ".." and $value != "." and $value != ".git") {
+            print('<tr>');
+            print('<td style="border: 1px solid black;">' . (is_dir($path . $value)
+                ? '<i class="fa-solid fa-folder-open" style="font-size: 20px; color:  #0073e6; "></i> <a style=" text-decoration: none; color:  #0073e6 " href="' . (isset($_GET['path'])
+                    ? $_SERVER["REQUEST_URI"] . $value . '/'
+                    : $_SERVER['REQUEST_URI'] . '?path=' . $value . '/') . '">' . $value . '</a>'
+                : $value)                    
+                . '</td>');
+               
+            print('<td style="border: 1px solid black; text-align: center; ">' . (is_dir($path . $value) ? "Folder" : "File") . '</td>');
+
+
+            if (is_dir($path . $value)) { 
+                print('<td style="border: 1px solid black;"></td>');
+                print('<td style="border: 1px solid black;"></td>');
+            } else if (is_file($path . $value)) {
+                
+
+                print('<td style="border: 1px solid black;">' .
+                    '<form style= "display: flex; justify-content: center" action="" method="post">
+                        <button class="delete btn btn-xs btn-danger" type ="submit" name="delete" value ='  . $value . ' style="color: white;">
+                        <i class="fa-regular fa-trash-can"></i> 
+                        Delete</button>
+                        </form>
+                       </td>'); 
+
+
+
+                print('<td style="border: 1px solid black;">');
+                print('<form style= "display: flex; justify-content: center" action="" method="POST">');
+                print('<button type="submit" name="download" value="' . $value . '" class="btn" style=" color: white; background: #2884bd;">
+                       <i class="fa-solid fa-download"></i> 
+                       Download</button>
+                       </form>'); 
+                print('</td>');
+            print("</tr>");  
+            }
+        }
+    }
+    print('</table>'); 
+
 
     }
     ?>
