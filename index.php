@@ -31,7 +31,7 @@
                 $_SESSION['logged_in'] = true;
                 $_SESSION['username'] = $_POST['username'];
                 print('<a href= "./" action= "">');
-                header("refresh: 3");
+                header("refresh: 0");
             
             } else {
                 $msg = 'Wrong username or password!';
@@ -141,9 +141,11 @@
         if (isset($_POST['delete']) && $_POST['delete'] !== 'index.php' &&
             $_POST['delete'] !== 'README.md' && $_POST['delete'] !== 'image2.png') {
             $file = './' . $path . $_POST['delete'];
-            if (is_file($file)) {                
-                if (file_exists($file)) {
-                    unlink($file);
+            $file1 = str_replace("&nbsp;", " ", $ki = htmlentities($file, 0, 'utf-8'));
+            var_dump($ki);
+            if (is_file($file1)) {                
+                if (file_exists($file1)) {
+                    unlink($file1);
                     header("refresh: 1");
                     $deleteSuccess = 'File Deleted Successfuly!';
                     }
@@ -207,7 +209,6 @@
                        </div></h6>');
                 }
         print('</div>');
-        // print("<br>");
        
 
             if(!$counter == 0){             // Back button show logic
@@ -264,7 +265,7 @@
                     print('<td style="border: 1px solid black;">' .
                         '<form style= "display: flex; justify-content: center" action="" method="post">
                             <button class="delete btn btn-xs btn-danger" type ="submit" name="delete" 
-                            value ='  . $value . ' style="color: white;">
+                            value ='  . str_replace(' ', '&nbsp;', $value) . ' style="color: white;">
                             <i class="fa-regular fa-trash-can"></i> 
                             Delete</button>
                             </form>
