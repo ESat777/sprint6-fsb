@@ -2,7 +2,7 @@
 
 ### FILE SYSTEM BROWSER 
 
-Login to File System Broswer with:
+Login to File System Browser with:
 
 `username: Patestuojam`
 `password: 1234`
